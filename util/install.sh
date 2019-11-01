@@ -150,25 +150,26 @@ function mn_deps {
     fi
 
     echo "Installing Mininet core"
-    pushd $MININET_DIR/mininet-wifi
-    if [ -d mininet ]; then
+    pushd $MININET_DIR/mn_dw
+    if [ -d containernet ]; then
       echo "Removing mininet dir..."
-      rm -r mininet
+      rm -r containernet
     fi
 
-    sudo git clone --depth=1 https://github.com/mininet/mininet.git
-    pushd $MININET_DIR/mininet-wifi/mininet
+    sudo git clone https://github.com/containernet/containernet.git
+    #sudo git clone --depth=1 https://github.com/mininet/mininet.git
+    pushd $MININET_DIR/mn_dw/containernet
     sudo python=${python} make install
     popd
-    echo "Installing Mininet-wifi core"
-    pushd $MININET_DIR/mininet-wifi
+    echo "Installing mn_dw core"
+    pushd $MININET_DIR/mn_dw
     sudo python=${python} make install
     popd
 }
 
-# Install Mininet-WiFi deps
+# Install mn_dw deps
 function wifi_deps {
-    echo "Installing Mininet-WiFi dependencies"
+    echo "Installing mn_dw dependencies"
     $install wireless-tools rfkill ${PYPKG}-numpy pkg-config \
              libnl-3-dev libnl-genl-3-dev libssl-dev make libevent-dev patch \
              ${PYPKG}-pip libdbus-1-dev
@@ -187,24 +188,24 @@ function wifi_deps {
         $install ${PYPKG}-matplotlib
     fi
 
-    pushd $MININET_DIR/mininet-wifi
+    pushd $MININET_DIR/mn_dw
     git submodule update --init --recursive
-    pushd $MININET_DIR/mininet-wifi/hostap
+    pushd $MININET_DIR/mn_dw/hostap
     if [ "$DIST" = "Ubuntu" ] && [ "$RELEASE" =  "14.04" ]; then
         git reset --hard 2c129a1
-        patch -p0 < $MININET_DIR/mininet-wifi/util/hostap-patches/config-1404.patch
+        patch -p0 < $MININET_DIR/mn_dw/util/hostap-patches/config-1404.patch
     else
-        patch -p0 < $MININET_DIR/mininet-wifi/util/hostap-patches/config.patch
+        patch -p0 < $MININET_DIR/mn_dw/util/hostap-patches/config.patch
     fi
-    pushd $MININET_DIR/mininet-wifi/hostap/hostapd
+    pushd $MININET_DIR/mn_dw/hostap/hostapd
     cp defconfig .config
     sudo make && make install
-    pushd $MININET_DIR/mininet-wifi/hostap/wpa_supplicant
+    pushd $MININET_DIR/mn_dw/hostap/wpa_supplicant
     cp defconfig .config
     sudo make && make install
-    pushd $MININET_DIR/mininet-wifi/
+    pushd $MININET_DIR/mn_dw/
     git clone --depth=1 https://git.kernel.org/pub/scm/linux/kernel/git/jberg/iw.git
-    pushd $MININET_DIR/mininet-wifi/iw
+    pushd $MININET_DIR/mn_dw/iw
     sudo make && make install
     cd $BUILD_DIR
     if [ -d mac80211_hwsim_mgmt ]; then
@@ -219,13 +220,13 @@ function wifi_deps {
 function babeld {
     echo "Installing babeld..."
 
-    cd $BUILD_DIR/mininet-wifi
+    cd $BUILD_DIR/mn_dw
     if [ -d babeld ]; then
           echo "Removing babeld..."
           rm -r babeld
         fi
     git clone --depth=1 https://github.com/jech/babeld
-    cd $BUILD_DIR/mininet-wifi/babeld
+    cd $BUILD_DIR/mn_dw/babeld
     make
     sudo make install
 }
@@ -234,13 +235,13 @@ function olsrd {
     echo "Installing olsrd..."
     $install bison flex
     
-    cd $BUILD_DIR/mininet-wifi
+    cd $BUILD_DIR/mn_dw
     if [ -d olsrd ]; then
           echo "Removing olsrd..."
           rm -r olsrd
         fi
     git clone --depth=1 https://github.com/OLSR/olsrd
-    cd $BUILD_DIR/mininet-wifi/olsrd
+    cd $BUILD_DIR/mn_dw/olsrd
     make
     sudo make install
 }
@@ -248,7 +249,7 @@ function olsrd {
 function batman {
     echo "Installing B.A.T.M.A.N..."
 
-    cd $BUILD_DIR/mininet-wifi
+    cd $BUILD_DIR/mn_dw
     if [ -d batman-adv ]; then
           echo "Removing batman-adv..."
           rm -r batman-adv
@@ -258,7 +259,7 @@ function batman {
     make
     sudo make install
 
-    cd $BUILD_DIR/mininet-wifi
+    cd $BUILD_DIR/mn_dw
     if [ -d batctl ]; then
           echo "Removing batctl..."
           rm -r batctl
@@ -296,7 +297,7 @@ function of {
     cd $BUILD_DIR/openflow
 
     # Patch controller to handle more than 16 switches
-    patch -p1 < $MININET_DIR/mininet-wifi/util/openflow-patches/controller.patch
+    patch -p1 < $MININET_DIR/mn_dw/util/openflow-patches/controller.patch
 
     # Resume the install:
     ./boot.sh
@@ -359,7 +360,7 @@ function install_wireshark {
     # Copy coloring rules: OF is white-on-blue:
     echo "Optionally installing wireshark color filters"
     mkdir -p $HOME/.wireshark
-    cp -n $MININET_DIR/mininet-wifi/util/colorfilters $HOME/.wireshark
+    cp -n $MININET_DIR/mn_dw/util/colorfilters $HOME/.wireshark
 
     echo "Checking Wireshark version"
     WSVER=`wireshark -v | egrep -o '[0-9\.]+' | head -1`
@@ -596,9 +597,9 @@ function nox {
 
     # Apply patches
     git checkout -b tutorial-destiny
-    git am $MININET_DIR/mininet-wifi/util/nox-patches/*tutorial-port-nox-destiny*.patch
+    git am $MININET_DIR/mn_dw/util/nox-patches/*tutorial-port-nox-destiny*.patch
     if [ "$DIST" = "Ubuntu" ] && version_ge $RELEASE 12.04; then
-        git am $MININET_DIR/mininet-wifi/util/nox-patches/*nox-ubuntu12-hacks.patch
+        git am $MININET_DIR/mn_dw/util/nox-patches/*nox-ubuntu12-hacks.patch
     fi
 
     # Build
@@ -792,7 +793,7 @@ function wmediumd {
       rm -r wmediumd
     fi
     $install git make libevent-dev libconfig-dev libnl-3-dev libnl-genl-3-dev
-    git clone --depth=1 -b mininet-wifi https://github.com/ramonfontes/wmediumd.git
+    git clone --depth=1 -b mn_dw https://github.com/ramonfontes/wmediumd.git
     pushd $BUILD_DIR/wmediumd
     sudo make install
     popd
@@ -847,7 +848,7 @@ function all {
     olsrd
     batman
     wpan_tools
-    echo "Enjoy Mininet-WiFi!"
+    echo "Enjoy mn_dw!"
 }
 
 # Restore disk space and remove sensitive files before shipping a VM.
@@ -915,7 +916,7 @@ function usage {
     printf -- ' -v: install Open (V)switch\n' >&2
     printf -- ' -V <version>: install a particular version of Open (V)switch on Ubuntu\n' >&2
     printf -- ' -w: install OpenFlow (W)ireshark dissector\n' >&2
-    printf -- ' -W: install Mininet-WiFi dependencies\n' >&2
+    printf -- ' -W: install mn_dw dependencies\n' >&2
     printf -- ' -x: install NO(X) Classic OpenFlow controller\n' >&2
     printf -- ' -y: install R(y)u Controller\n' >&2
     printf -- ' -0: (default) -0[fx] installs OpenFlow 1.0 versions\n' >&2

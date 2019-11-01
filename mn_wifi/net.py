@@ -18,7 +18,9 @@ from six import string_types
 
 from mininet.cli import CLI
 from mininet.term import cleanUpScreens, makeTerms
-from mininet.net import Mininet
+#from mininet.net import Mininet
+from mininet.net import Containernet
+
 from mininet.node import (Node, Host, OVSKernelSwitch,
                           DefaultController, Controller)
 from mininet.util import (quietRun, fixLimits, numCores, ensureRoot,
@@ -43,9 +45,9 @@ from mn_wifi.plot import plot2d, plot3d, plotGraph
 from mn_wifi.module import module
 from mn_wifi.propagationModels import propagationModel
 from mn_wifi.vanet import vanet
-from mn_wifi.sixLoWPAN.net import Mininet_6LoWPAN as sixlowpan
-from mn_wifi.sixLoWPAN.module import module as sixLoWPAN_module
-from mn_wifi.sixLoWPAN.link import sixLoWPANLink
+#from mn_wifi.sixLoWPAN.net import Mininet_6LoWPAN as sixlowpan
+#from mn_wifi.sixLoWPAN.module import module as sixLoWPAN_module
+#from mn_wifi.sixLoWPAN.link import sixLoWPANLink
 
 
 sys.path.append(str(os.getcwd()) + '/mininet/')
@@ -53,7 +55,7 @@ sys.path.append(str(os.getcwd()) + '/mininet/')
 VERSION = "2.4.1"
 
 
-class Mininet_wifi(Mininet):
+class Mininet_wifi(Containernet):
 
     def __init__(self, topo=None, switch=OVSKernelSwitch,
                  accessPoint=OVSKernelAP, host=Host, station=Station,
@@ -314,19 +316,19 @@ class Mininet_wifi(Mininet):
         sta = cls(name, **defaults)
 
         self.addParameters(sta, self.autoSetMacs, **defaults)
-        if 'sixlowpan' in params:
-            sixlowpan.init(sta, **params)
-            self.sixLP.append(sta)
+       # if 'sixlowpan' in params:
+       #     sixlowpan.init(sta, **params)
+       #     self.sixLP.append(sta)
 
         self.stations.append(sta)
         self.nameToNode[name] = sta
         return sta
 
-    def add6LoWPAN(self, name, cls=None, **params):
-        node = sixlowpan.add6LoWPAN(name, cls, **params)
-        self.sixLP.append(node)
-        self.nameToNode[name] = node
-        return node
+    # def add6LoWPAN(self, name, cls=None, **params):
+    #     node = sixlowpan.add6LoWPAN(name, cls, **params)
+    #     self.sixLP.append(node)
+    #     self.nameToNode[name] = node
+    #     return node
 
     def addCar(self, name, cls=None, **params):
         """Add Car.
@@ -521,10 +523,10 @@ class Mininet_wifi(Mininet):
                  wifiDirectLink, physicalWifiDirectLink]
         if cls in modes:
             cls(node=node1, **params)
-        elif cls == sixLoWPANLink:
-            link = cls(node=node1, port=port1, **params)
-            self.links.append(link)
-            return link
+        # elif cls == sixLoWPANLink:
+        #     link = cls(node=node1, port=port1, **params)
+        #     self.links.append(link)
+        #    return link
         elif cls == _4address:
             if 'position' in node1.params and 'position' in node2.params:
                 self.conn['src'].append(node1)
@@ -1008,9 +1010,9 @@ class Mininet_wifi(Mininet):
         else:
             ploss = 0
             output("*** Warning: No packets sent\n")
-        if self.sixLP:
-            nodes = self.sixLP
-            sixlowpan.ping6(nodes, timeout)
+        # if self.sixLP:
+        #     nodes = self.sixLP
+        #     sixlowpan.ping6(nodes, timeout)
         return ploss
 
     @staticmethod
@@ -1715,8 +1717,8 @@ class Mininet_wifi(Mininet):
             params['ssh_user'] = self.ssh_user
         nodes = self.stations + self.cars + self.aps
         module(nodes, self.n_radios, self.alt_module, **params)
-        if sixlowpan.n_wpans != 0:
-            sixLoWPAN_module(self.sixLP, sixlowpan.n_wpans)
+        # if sixlowpan.n_wpans != 0:
+        #     sixLoWPAN_module(self.sixLP, sixlowpan.n_wpans)
         self.configureWirelessLink()
         self.createVirtualIfaces(self.stations)
         AccessPoint(self.aps, self.driver, config=True)

@@ -30,7 +30,7 @@ from sys import version_info as py_version_info
 
 from mininet.log import info, error, debug
 from mininet.util import (quietRun, errRun, errFail, mountCgroups,
-                          numCores, retry, Python3, getincrementaldecoder,
+                          numCores, retry, Python3,
                           moveIntf)
 from mininet.node import Node
 from mininet.moduledeps import moduleDeps, pathCheck, TUN
@@ -82,7 +82,7 @@ class Node_wifi(Node):
         self.readbuf = ''
 
         # Incremental decoder for buffered reading
-        self.decoder = getincrementaldecoder()
+        #self.decoder = getincrementaldecoder()
 
         # Start command interpreter shell
         self.master, self.slave = None, None  # pylint
